@@ -16,9 +16,9 @@ export class CategoryEntity{
     })
     createDate:Date;
 
-    @ManyToOne(() => UserEntity, (user) => user)
+    @ManyToOne(() => UserEntity, (user) => user, {nullable:true})
     user:UserEntity;
 
-    @OneToMany(() => TransactionEntity, (transaction) => transaction.category)
+    @OneToMany(() => TransactionEntity, (transaction) => transaction.category, {nullable:true})
     transactions:TransactionEntity[];
 }
