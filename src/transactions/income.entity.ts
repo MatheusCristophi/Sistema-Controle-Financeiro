@@ -1,7 +1,6 @@
-import { ChildEntity, Entity } from 'typeorm'
+import { ChildEntity } from 'typeorm'
 import { TransactionEntity } from './transaction.entity';
 
-@Entity()
 @ChildEntity('Incomes')
 export class IncomeEntity extends TransactionEntity{
     

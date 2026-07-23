@@ -6,6 +6,8 @@ import { UserEntity } from 'src/users/users.entity';
 import { ForbiddenException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { TransactionRequest } from './DTOs/transaction.request';
 import { CategoryEntity } from 'src/category/category.entity';
+import { IncomeEntity } from './income.entity';
+import { ExpensesEntity } from './expense.entity';
 
 export class TransactionService {
 
@@ -15,7 +17,7 @@ export class TransactionService {
         private readonly dataSource: DataSource
     ) { }
 
-    async createTransaction(transactionRequest: TransactionRequest, userId: string, categoryId:string): Promise<TransactionResponse> {
+    async createIncome(transactionRequest: TransactionRequest, userId: string, categoryId:string): Promise<TransactionResponse> {
         const queryRunner = this.dataSource.createQueryRunner();
 
         await queryRunner.connect();
@@ -34,7 +36,45 @@ export class TransactionService {
                 throw new NotFoundException("Não foi possível buscar a categoria")
             }
 
-            const transaction:TransactionEntity = new TransactionEntity();
+            const transaction:IncomeEntity = new IncomeEntity();
+            transaction.user = user;
+            transaction.description = transactionRequest.description;
+            transaction.value = transactionRequest.value;
+            transaction.category = category;
+            transaction.status = transactionRequest.status;
+            transaction.paymentMethod = transactionRequest.paymentMethod
+
+            await queryRunner.manager.save(transaction);
+            await queryRunner.commitTransaction();
+            return TransactionResponse.fromTransaction(transaction);
+        } catch(error) {
+            await queryRunner.rollbackTransaction();
+            throw error
+        } finally {
+            await queryRunner.release();
+        }
+    }
+
+    async createExpense(transactionRequest: TransactionRequest, userId: string, categoryId:string): Promise<TransactionResponse> {
+        const queryRunner = this.dataSource.createQueryRunner();
+
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        try {
+            const user = await queryRunner.manager.findOneBy(UserEntity, { id: userId });
+
+            const category = await queryRunner.manager.findOneBy(CategoryEntity, {id: categoryId});
+
+            if (!user) {
+                throw new UnauthorizedException("Não foi possível buscar o usuário")
+            }
+
+            if (!category) {
+                throw new NotFoundException("Não foi possível buscar a categoria")
+            }
+
+            const transaction:ExpensesEntity = new ExpensesEntity();
             transaction.user = user;
             transaction.description = transactionRequest.description;
             transaction.value = transactionRequest.value;

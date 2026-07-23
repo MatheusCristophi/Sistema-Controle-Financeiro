@@ -16,7 +16,7 @@ import { CategoryModule } from './category/category.module';
       password:process.env.DB_PASSWORD,
       database:process.env.DB_DATABASE,
       logging: true,
-      migrations: [__dirname + 'database/migrations/*{.ts,.js}'],
+      synchronize:true,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
     }),
     UsersModule,
